@@ -6,11 +6,6 @@ import PropTypes from 'prop-types';
 
 
 const App = () => {
-
-  const handleSearch = (event) => {
-    console.log(event.target.value);
-  }
-
   const stories = [
     {
       title: 'React',
@@ -29,15 +24,29 @@ const App = () => {
     },
   ];
 
+
+  const [searchTerm, setSearchTerm] = useState('React');
+
+  const handleSearch = (event) => {
+    setSearchTerm(event.target.value);
+  }
+
+  // Filter creates a new filtered array. Takes a function as an argument which accesses each item in the array and returns true/false. If true the item stays in the array, if false it is removed.
+  const searchedStories = stories.filter(function (story) {
+    return story.title.toLowerCase().includes(searchTerm.toLowerCase());
+  });
+
+
+
   return (
     <div>
       <h1>My Hacker Stories</h1>
 
-      <Search onSearch={handleSearch}/>
+      <Search search={searchTerm} onSearch={handleSearch}/>
 
       <hr />
 
-      <List list={stories} />
+      <List list={searchedStories} />
     </div>
   )
 };
@@ -45,45 +54,49 @@ const App = () => {
 
 
 const Search = (props) => {
+  const { search, onSearch } = props; //prop destructuring makes things more concise
+  // it is also possible to destructure the props directly in the function parameters: ex: const Search = ({search, on search}) => {...}. This makes the function a concise body rather than block body
 
-const [searchTerm, setSearchTerm] = useState('');
-
-const handleChange = (event) => {
-  setSearchTerm(event.target.value)
-  props.onSearch(event);
-}
-  
   return (
     <React.Fragment>
       <div>
         <label htmlFor="search">Search: </label>
-        <input id="search" type="text" onChange={handleChange}/>
+        <input value={search} id="search" type="text" onChange={onSearch}/>
       </div>
-
-      <p>Searching for search term: {searchTerm}</p>
     </React.Fragment>
   )
 };
 
 const List = (props) => {
+  const { list } = props;
   return (
     <ul>
-      {props.list.map((item) => (
+      {list.map((item) => (
         <Item key={item.objectID} item={item} />
       ))}
     </ul>
   )
 }
 
-const Item = (props) => {
+const Item = ({
+  item: {
+    title,
+    url,
+    author,
+    num_comments,
+    points,
+  }
+}) => {
+// you can also do nested destructuring which is sometimes more concise.
+
   return (
     <li>
       <span>
-        <a href={props.item.url}>{props.item.title}</a>
+        <a href={url}>{title}</a>
       </span>
-      <span>{props.item.author}</span>
-      <span>{props.item.num_comments}</span>
-      <span>{props.item.points}</span>
+      <span>{author}</span>
+      <span>{num_comments}</span>
+      <span>{points}</span>
     </li>
   )
 };
@@ -91,7 +104,9 @@ const Item = (props) => {
 
 //This is listing out the prop types for each component. Need to do for each component that props are passed to. 
 Search.propTypes = {
-  onSearch: PropTypes.func
+  onSearch: PropTypes.func,
+  search: PropTypes.string,
+
 }
 
 Item.propTypes = {
