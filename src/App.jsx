@@ -1,5 +1,5 @@
 import React from 'react'
-import { useState } from 'react'
+// import { useState } from 'react'
 import './App.css'
 import PropTypes from 'prop-types';
 
@@ -24,8 +24,7 @@ const App = () => {
     },
   ];
 
-
-  const [searchTerm, setSearchTerm] = useState('React');
+  const [searchTerm, setSearchTerm] = useStorageState('Search', 'React');
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
@@ -36,13 +35,11 @@ const App = () => {
     return story.title.toLowerCase().includes(searchTerm.toLowerCase());
   });
 
-
-
   return (
     <div>
       <h1>My Hacker Stories</h1>
 
-      <Search search={searchTerm} onSearch={handleSearch}/>
+      <InputWithLabel id="search" label="Search" value={searchTerm} onInputChange={handleSearch}/>
 
       <hr />
 
@@ -51,62 +48,65 @@ const App = () => {
   )
 };
 
+const useStorageState = (key, initialState) => {
+  const [value, setValue] = React.useState(localStorage.getItem(key) || initialState);
 
+  React.useEffect(() => {
+    localStorage.setItem(key, value);
+  }, [value, key]);
 
-const Search = (props) => {
-  const { search, onSearch } = props; //prop destructuring makes things more concise
+  return [value, setValue];
+};
+
+const InputWithLabel = ({id, label, value, type = "text", onInputChange}) => {
+  // const { search, onSearch } = props; //prop destructuring makes things more concise
   // it is also possible to destructure the props directly in the function parameters: ex: const Search = ({search, on search}) => {...}. This makes the function a concise body rather than block body
 
   return (
     <React.Fragment>
       <div>
-        <label htmlFor="search">Search: </label>
-        <input value={search} id="search" type="text" onChange={onSearch}/>
+        <label htmlFor={id}>{label}</label>
+        <input value={value} id={id} type={type} onChange={onInputChange}/>
       </div>
     </React.Fragment>
   )
 };
 
-const List = (props) => {
-  const { list } = props;
+const List = ({list}) => {
+
   return (
     <ul>
       {list.map((item) => (
-        <Item key={item.objectID} item={item} />
+        <Item key={item.objectID} item={item}/>
       ))}
     </ul>
   )
 }
 
-const Item = ({
-  item: {
-    title,
-    url,
-    author,
-    num_comments,
-    points,
-  }
-}) => {
-// you can also do nested destructuring which is sometimes more concise.
+const Item = ({item}) => {
 
   return (
     <li>
       <span>
-        <a href={url}>{title}</a>
+        <a href={item.url}>{item.title}</a>
       </span>
-      <span>{author}</span>
-      <span>{num_comments}</span>
-      <span>{points}</span>
+      <span>{item.author}</span>
+      <span>{item.num_comments}</span>
+      <span>{item.points}</span>
     </li>
   )
 };
 
 
 //This is listing out the prop types for each component. Need to do for each component that props are passed to. 
-Search.propTypes = {
+InputWithLabel.propTypes = {
   onSearch: PropTypes.func,
   search: PropTypes.string,
-
+  id: PropTypes.string.isRequired,
+  label: PropTypes.string.isRequired,
+  value: PropTypes.string,
+  type: PropTypes.oneOf(['text', 'number', 'search']),
+  onInputChange: PropTypes.func.isRequired,
 }
 
 Item.propTypes = {
