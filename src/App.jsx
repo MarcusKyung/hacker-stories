@@ -6,11 +6,12 @@ import PropTypes from 'prop-types';
 
 
 const App = () => {
-  const stories = [
+  const initialStories = [
     {
       title: 'React',
       url: 'https://reactjs.org/',
       author: 'Jordan Walke',
+      num_comments: 3,
       points: 4,
       objectID: 0,
     },
@@ -23,11 +24,18 @@ const App = () => {
       objectID: 1,
     },
   ];
-
+  const [stories, setStories] = React.useState(initialStories);
   const [searchTerm, setSearchTerm] = useStorageState('Search', 'React');
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
+  }
+
+  const handleRemoveStory = (item) => {
+    const newStories = stories.filter(
+      (story) => item.objectID !== story.objectID
+    );
+    setStories(newStories);
   }
 
   // Filter creates a new filtered array. Takes a function as an argument which accesses each item in the array and returns true/false. If true the item stays in the array, if false it is removed.
@@ -39,11 +47,11 @@ const App = () => {
     <div>
       <h1>My Hacker Stories</h1>
 
-      <InputWithLabel id="search" label="Search" value={searchTerm} onInputChange={handleSearch}/>
+      <InputWithLabel id="search" value={searchTerm} isFocused onInputChange={handleSearch}><strong>Search</strong></InputWithLabel>
 
       <hr />
 
-      <List list={searchedStories} />
+      <List list={searchedStories} onRemoveItem={handleRemoveStory} />
     </div>
   )
 };
@@ -58,33 +66,32 @@ const useStorageState = (key, initialState) => {
   return [value, setValue];
 };
 
-const InputWithLabel = ({id, label, value, type = "text", onInputChange}) => {
+const InputWithLabel = ({id, value, type = "text", onInputChange, children, isFocused}) => {
   // const { search, onSearch } = props; //prop destructuring makes things more concise
   // it is also possible to destructure the props directly in the function parameters: ex: const Search = ({search, on search}) => {...}. This makes the function a concise body rather than block body
 
   return (
     <React.Fragment>
       <div>
-        <label htmlFor={id}>{label}</label>
-        <input value={value} id={id} type={type} onChange={onInputChange}/>
+        <label htmlFor={id}>{children}</label>
+        <input autoFocus={isFocused} value={value} id={id} type={type} onChange={onInputChange}/>
       </div>
     </React.Fragment>
   )
 };
 
-const List = ({list}) => {
+const List = ({list, onRemoveItem}) => {
 
   return (
     <ul>
       {list.map((item) => (
-        <Item key={item.objectID} item={item}/>
+        <Item key={item.objectID} item={item} onRemoveItem={onRemoveItem}/>
       ))}
     </ul>
   )
 }
 
-const Item = ({item}) => {
-
+const Item = ({item, onRemoveItem}) => {
   return (
     <li>
       <span>
@@ -93,6 +100,7 @@ const Item = ({item}) => {
       <span>{item.author}</span>
       <span>{item.num_comments}</span>
       <span>{item.points}</span>
+      <span><button type="button" onClick={()=> onRemoveItem(item)}>Remove</button></span>
     </li>
   )
 };
@@ -107,9 +115,12 @@ InputWithLabel.propTypes = {
   value: PropTypes.string,
   type: PropTypes.oneOf(['text', 'number', 'search']),
   onInputChange: PropTypes.func.isRequired,
+  children: PropTypes.node.isRequired,
+  isFocused: PropTypes.bool,
 }
 
 Item.propTypes = {
+  onRemoveItem: PropTypes.func.isRequired,
   item: PropTypes.shape({
     url: PropTypes.string,
     title: PropTypes.string,
@@ -120,6 +131,7 @@ Item.propTypes = {
 };
 
 List.propTypes = {
+  onRemoveItem: PropTypes.func.isRequired,
   list: PropTypes.arrayOf(
     PropTypes.shape({
       objectID: PropTypes.number.isRequired,
