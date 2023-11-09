@@ -36,32 +36,51 @@ const App = () => {
 
   const storiesReducer = (state, action) => {
     switch (action.type) {
-      case 'SET_STORIES':
-        return action.payload;
+      case 'STORIES_FETCH_INIT':
+        return {
+          ...state,
+          isLoading: true,
+          isError: false,
+        }
+      case 'STORIES_FETCH_SUCCESS':
+        return {
+          ...state,
+          isLoading: false,
+          isError: false,
+          data: action.payload,
+        }
+      case 'STORIES_FETCH_FAILURE':
+        return {
+          ...state,
+          isLoading: false,
+          isError: true,
+        }
       case 'REMOVE_STORY':
-        return state.filter(story => action.payload.objectID !== story.objectID);
+        return {
+          ...state,
+          data: state.data.filter((story) => action.payload.objectID !== story.objectID)
+        }
       default: 
         throw new Error();
     }
   };
 
   // const [stories, setStories] = React.useState([]); // Replaced with useReducer
-  const [stories, dispatchStories] = React.useReducer(storiesReducer, []);
+  const [stories, dispatchStories] = React.useReducer(storiesReducer, {data: [], isLoading: false, isError: false});
   const [searchTerm, setSearchTerm] = useStorageState('Search', 'React');
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [isError, setIsError] = React.useState(false);
+  // const [isLoading, setIsLoading] = React.useState(false);
+  // const [isError, setIsError] = React.useState(false); // replaced with useReducer
 
 
   React.useEffect(() => {
-    setIsLoading(true);
+    dispatchStories({type: 'STORIES_FETCH_INIT'});
     getAsyncStories().then(result => {
       dispatchStories({
-        type: 'SET_STORIES',
+        type: 'STORIES_FETCH_SUCCESS',
         payload: result.data.stories,
       });
-      setIsLoading(false);
     })
-    .catch(() => setIsError(true));
+    .catch(() => dispatchStories({type: 'STORIES_FETCH_FAILURE'}));
   }, []);
 
   const handleRemoveStory = (item) => {
@@ -76,7 +95,7 @@ const App = () => {
   }
 
   // Filter creates a new filtered array. Takes a function as an argument which accesses each item in the array and returns true/false. If true the item stays in the array, if false it is removed.
-  const searchedStories = stories.filter(function (story) {
+  const searchedStories = stories.data.filter(function (story) {
     return story.title.toLowerCase().includes(searchTerm.toLowerCase());
   });
 
@@ -87,8 +106,8 @@ const App = () => {
       <InputWithLabel id="search" value={searchTerm} isFocused onInputChange={handleSearch}><strong>Search</strong></InputWithLabel>
 
       <hr />
-      {isError && <p>Something Went Wrong...</p>}
-      {isLoading ? (<p>Loading...</p>) : (<List list={searchedStories} onRemoveItem={handleRemoveStory}/>)}
+      {stories.isError && <p>Something Went Wrong...</p>}
+      {stories.isLoading ? (<p>Loading...</p>) : (<List list={searchedStories} onRemoveItem={handleRemoveStory}/>)}
     </div>
   )
 };
