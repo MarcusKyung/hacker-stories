@@ -2,6 +2,7 @@ import React from 'react'
 // import { useState } from 'react'
 import './App.css'
 import PropTypes from 'prop-types';
+import axios from 'axios';
 
 
 
@@ -45,21 +46,28 @@ const App = () => {
   const [searchTerm, setSearchTerm] = useStorageState('Search', 'React');
   // const [isLoading, setIsLoading] = React.useState(false);
   // const [isError, setIsError] = React.useState(false); // replaced with useReducer
+  const [url, setUrl] = React.useState(`${API_ENDPOINT}${searchTerm}`);
 
 
-  React.useEffect(() => {
+  const handleFetchStories = React.useCallback(() => {
+  if (!searchTerm) return;
+
     dispatchStories({type: 'STORIES_FETCH_INIT'});
 
-    fetch(`${API_ENDPOINT}react`)
+    axios.get(url)
       .then((response) => response.json())
       .then(result => {
       dispatchStories({
         type: 'STORIES_FETCH_SUCCESS',
-        payload: result.hits,
+        payload: result.data.hits,
       });
     })
     .catch(() => dispatchStories({type: 'STORIES_FETCH_FAILURE'}));
-  }, []);
+  }, [url]);
+
+  React.useEffect(() => {
+    handleFetchStories();
+  }, [handleFetchStories])
 
   const handleRemoveStory = (item) => {
     dispatchStories({
@@ -68,24 +76,23 @@ const App = () => {
     });
   }
 
-  const handleSearch = (event) => {
+  const handleSearchInput = (event) => {
     setSearchTerm(event.target.value);
   }
 
-  // Filter creates a new filtered array. Takes a function as an argument which accesses each item in the array and returns true/false. If true the item stays in the array, if false it is removed.
-  const searchedStories = stories.data.filter(function (story) {
-    return story.title.toLowerCase().includes(searchTerm.toLowerCase());
-  });
+  const handleSearchSubmit = () => {
+    setUrl(`${API_ENDPOINT}${searchTerm}`)
+  }
 
   return (
     <div>
       <h1>My Hacker Stories</h1>
 
-      <InputWithLabel id="search" value={searchTerm} isFocused onInputChange={handleSearch}><strong>Search</strong></InputWithLabel>
-
+      <InputWithLabel id="search" value={searchTerm} isFocused onInputChange={handleSearchInput}><strong>Search</strong></InputWithLabel>
+      <button type="button" disabled={!searchTerm} onClick={handleSearchSubmit}>Submit</button>
       <hr />
       {stories.isError && <p>Something Went Wrong...</p>}
-      {stories.isLoading ? (<p>Loading...</p>) : (<List list={searchedStories} onRemoveItem={handleRemoveStory}/>)}
+      {stories.isLoading ? (<p>Loading...</p>) : (<List list={stories.data} onRemoveItem={handleRemoveStory}/>)}
     </div>
   )
 };
