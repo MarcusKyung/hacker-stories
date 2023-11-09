@@ -6,33 +6,8 @@ import PropTypes from 'prop-types';
 
 
 const App = () => {
-  const initialStories = [
-    {
-      title: 'React',
-      url: 'https://reactjs.org/',
-      author: 'Jordan Walke',
-      num_comments: 3,
-      points: 4,
-      objectID: 0,
-    },
-    {
-      title: 'Redux',
-      url: 'https://redux.js.org/',
-      author: 'Dan Abramov, Andrew Clark',
-      num_comments: 2,
-      points: 5,
-      objectID: 1,
-    },
-  ];
 
-  //Simulated async fetching of stories
-  const getAsyncStories = () =>
-  new Promise(resolve =>
-    setTimeout(
-      () => resolve({ data: { stories: initialStories } }),
-      2000
-    )
-  );
+  const API_ENDPOINT = 'https://hn.algolia.com/api/v1/search?query=';
 
   const storiesReducer = (state, action) => {
     switch (action.type) {
@@ -74,10 +49,13 @@ const App = () => {
 
   React.useEffect(() => {
     dispatchStories({type: 'STORIES_FETCH_INIT'});
-    getAsyncStories().then(result => {
+
+    fetch(`${API_ENDPOINT}react`)
+      .then((response) => response.json())
+      .then(result => {
       dispatchStories({
         type: 'STORIES_FETCH_SUCCESS',
-        payload: result.data.stories,
+        payload: result.hits,
       });
     })
     .catch(() => dispatchStories({type: 'STORIES_FETCH_FAILURE'}));
@@ -167,7 +145,6 @@ InputWithLabel.propTypes = {
   onSearch: PropTypes.func,
   search: PropTypes.string,
   id: PropTypes.string.isRequired,
-  label: PropTypes.string.isRequired,
   value: PropTypes.string,
   type: PropTypes.oneOf(['text', 'number', 'search']),
   onInputChange: PropTypes.func.isRequired,
@@ -190,7 +167,7 @@ List.propTypes = {
   onRemoveItem: PropTypes.func.isRequired,
   list: PropTypes.arrayOf(
     PropTypes.shape({
-      objectID: PropTypes.number.isRequired,
+      objectID: PropTypes.string.isRequired,
       url: PropTypes.string,
       title: PropTypes.string,
       author: PropTypes.string,
