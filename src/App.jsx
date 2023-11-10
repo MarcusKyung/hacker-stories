@@ -7,9 +7,7 @@ import axios from 'axios';
 
 const App = () => {
 
-  const [stories, dispatchStories] = React.useReducer(storiesReducer, {data: [], isLoading: false, isError: false});
-  const [searchTerm, setSearchTerm] = useStorageState('Search', 'React');
-  const [url, setUrl] = React.useState(`${API_ENDPOINT}${searchTerm}`);
+
 
   const API_ENDPOINT = 'https://hn.algolia.com/api/v1/search?query=';
   const storiesReducer = (state, action) => {
@@ -43,8 +41,13 @@ const App = () => {
     }
   };
 
+  const [stories, dispatchStories] = React.useReducer(storiesReducer, {data: [], isLoading: false, isError: false});
+  const [searchTerm, setSearchTerm] = useStorageState('Search', 'React');
+  const [url, setUrl] = React.useState(`${API_ENDPOINT}${searchTerm}`);
+
+
   const handleFetchStories = React.useCallback(async () => {
-  if (!searchTerm) return;
+  
     dispatchStories({type: 'STORIES_FETCH_INIT'});
     try {
     const result = await axios.get(url)
