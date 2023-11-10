@@ -1,5 +1,4 @@
 import React from 'react'
-// import { useState } from 'react'
 import './App.css'
 import PropTypes from 'prop-types';
 import axios from 'axios';
@@ -8,8 +7,11 @@ import axios from 'axios';
 
 const App = () => {
 
-  const API_ENDPOINT = 'https://hn.algolia.com/api/v1/search?query=';
+  const [stories, dispatchStories] = React.useReducer(storiesReducer, {data: [], isLoading: false, isError: false});
+  const [searchTerm, setSearchTerm] = useStorageState('Search', 'React');
+  const [url, setUrl] = React.useState(`${API_ENDPOINT}${searchTerm}`);
 
+  const API_ENDPOINT = 'https://hn.algolia.com/api/v1/search?query=';
   const storiesReducer = (state, action) => {
     switch (action.type) {
       case 'STORIES_FETCH_INIT':
@@ -41,19 +43,9 @@ const App = () => {
     }
   };
 
-  // const [stories, setStories] = React.useState([]); // Replaced with useReducer
-  const [stories, dispatchStories] = React.useReducer(storiesReducer, {data: [], isLoading: false, isError: false});
-  const [searchTerm, setSearchTerm] = useStorageState('Search', 'React');
-  // const [isLoading, setIsLoading] = React.useState(false);
-  // const [isError, setIsError] = React.useState(false); // replaced with useReducer
-  const [url, setUrl] = React.useState(`${API_ENDPOINT}${searchTerm}`);
-
-
   const handleFetchStories = React.useCallback(async () => {
   if (!searchTerm) return;
-
     dispatchStories({type: 'STORIES_FETCH_INIT'});
-
     try {
     const result = await axios.get(url)
       dispatchStories({
@@ -80,22 +72,33 @@ const App = () => {
     setSearchTerm(event.target.value);
   }
 
-  const handleSearchSubmit = () => {
+  const handleSearchSubmit = (event) => {
     setUrl(`${API_ENDPOINT}${searchTerm}`)
+    event.preventDefault();
   }
 
   return (
     <div>
       <h1>My Hacker Stories</h1>
-
-      <InputWithLabel id="search" value={searchTerm} isFocused onInputChange={handleSearchInput}><strong>Search</strong></InputWithLabel>
-      <button type="button" disabled={!searchTerm} onClick={handleSearchSubmit}>Submit</button>
+      <SearchForm searchTerm={searchTerm} onSearchInput={handleSearchInput} onSearchSubmit={handleSearchSubmit}/>
       <hr />
       {stories.isError && <p>Something Went Wrong...</p>}
       {stories.isLoading ? (<p>Loading...</p>) : (<List list={stories.data} onRemoveItem={handleRemoveStory}/>)}
     </div>
   )
 };
+
+const SearchForm = ({ searchTerm, onSearchInput, onSearchSubmit }) => {
+
+  return (
+  <React.Fragment>
+    <form onSubmit={onSearchSubmit}>
+      <InputWithLabel id="search" value={searchTerm} isFocused onInputChange={onSearchInput}><strong>Search</strong></InputWithLabel>
+      <button type="submit" disabled={!searchTerm} >Submit</button>
+    </form>
+  </React.Fragment>
+)
+}
 
 const useStorageState = (key, initialState) => {
   const [value, setValue] = React.useState(localStorage.getItem(key) || initialState);
@@ -108,9 +111,6 @@ const useStorageState = (key, initialState) => {
 };
 
 const InputWithLabel = ({id, value, type = "text", onInputChange, children, isFocused}) => {
-  // const { search, onSearch } = props; //prop destructuring makes things more concise
-  // it is also possible to destructure the props directly in the function parameters: ex: const Search = ({search, on search}) => {...}. This makes the function a concise body rather than block body
-
   return (
     <React.Fragment>
       <div>
@@ -122,7 +122,6 @@ const InputWithLabel = ({id, value, type = "text", onInputChange, children, isFo
 };
 
 const List = ({list, onRemoveItem}) => {
-
   return (
     <ul>
       {list.map((item) => (
@@ -147,7 +146,7 @@ const Item = ({item, onRemoveItem}) => {
 };
 
 
-//This is listing out the prop types for each component. Need to do for each component that props are passed to. 
+// PROP VALIDATION
 InputWithLabel.propTypes = {
   onSearch: PropTypes.func,
   search: PropTypes.string,
@@ -183,5 +182,11 @@ List.propTypes = {
     }),
   ),
 };
+
+SearchForm.propTypes ={
+  searchTerm: PropTypes.string,
+  onSearchInput: PropTypes.func,
+  onSearchSubmit: PropTypes.func,
+}
 
 export default App
