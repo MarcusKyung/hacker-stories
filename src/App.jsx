@@ -1,5 +1,5 @@
 import React from 'react'
-import './App.css'
+import styles from './App.module.css'
 import PropTypes from 'prop-types';
 import axios from 'axios';
 
@@ -81,10 +81,10 @@ const App = () => {
   }
 
   return (
-    <div>
-      <h1>My Hacker Stories</h1>
+    <div className={styles.container}>
+      <h1 className={styles.headlinePrimary}>My Hacker Stories</h1>
       <SearchForm searchTerm={searchTerm} onSearchInput={handleSearchInput} onSearchSubmit={handleSearchSubmit}/>
-      <hr />
+
       {stories.isError && <p>Something Went Wrong...</p>}
       {stories.isLoading ? (<p>Loading...</p>) : (<List list={stories.data} onRemoveItem={handleRemoveStory}/>)}
     </div>
@@ -92,12 +92,11 @@ const App = () => {
 };
 
 const SearchForm = ({ searchTerm, onSearchInput, onSearchSubmit }) => {
-
   return (
   <React.Fragment>
-    <form onSubmit={onSearchSubmit}>
+    <form onSubmit={onSearchSubmit} className={styles.searchForm}>
       <InputWithLabel id="search" value={searchTerm} isFocused onInputChange={onSearchInput}><strong>Search</strong></InputWithLabel>
-      <button type="submit" disabled={!searchTerm} >Submit</button>
+      <button className={`${styles.button} ${styles.buttonLarge}`} type="submit" disabled={!searchTerm} >Submit</button>
     </form>
   </React.Fragment>
 )
@@ -117,8 +116,8 @@ const InputWithLabel = ({id, value, type = "text", onInputChange, children, isFo
   return (
     <React.Fragment>
       <div>
-        <label htmlFor={id}>{children}</label>
-        <input autoFocus={isFocused} value={value} id={id} type={type} onChange={onInputChange}/>
+        <label className={styles.label} htmlFor={id}>{children}</label>
+        <input className={styles.input} autoFocus={isFocused} value={value} id={id} type={type} onChange={onInputChange}/>
       </div>
     </React.Fragment>
   )
@@ -136,14 +135,16 @@ const List = ({list, onRemoveItem}) => {
 
 const Item = ({item, onRemoveItem}) => {
   return (
-    <li>
-      <span>
+    <li className={styles.item}>
+      <span style={{width: '40%'}}>
         <a href={item.url}>{item.title}</a>
       </span>
-      <span>{item.author}</span>
-      <span>{item.num_comments}</span>
-      <span>{item.points}</span>
-      <span><button type="button" onClick={()=> onRemoveItem(item)}>Remove</button></span>
+      <span style={{width: '30%'}}>{item.author}</span>
+      <span style={{width: '10%'}}>{item.num_comments}</span>
+      <span style={{width: '10%'}}>{item.points}</span>
+      <span>
+        <button className={`${styles.button} ${styles.buttonSmall}`} type="button" onClick={()=> onRemoveItem(item)}>Remove</button>
+      </span>
     </li>
   )
 };
