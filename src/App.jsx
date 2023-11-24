@@ -6,9 +6,6 @@ import axios from 'axios';
 
 
 const App = () => {
-
-
-
   const API_ENDPOINT = 'https://hn.algolia.com/api/v1/search?query=';
   const storiesReducer = (state, action) => {
     switch (action.type) {
@@ -81,10 +78,10 @@ const App = () => {
   }
 
   return (
-    <div>
-      <h1>My Hacker Stories</h1>
+    <div className="container">
+      <h1 className="headline-primary">My Hacker Stories</h1>
       <SearchForm searchTerm={searchTerm} onSearchInput={handleSearchInput} onSearchSubmit={handleSearchSubmit}/>
-      <hr />
+
       {stories.isError && <p>Something Went Wrong...</p>}
       {stories.isLoading ? (<p>Loading...</p>) : (<List list={stories.data} onRemoveItem={handleRemoveStory}/>)}
     </div>
@@ -92,12 +89,11 @@ const App = () => {
 };
 
 const SearchForm = ({ searchTerm, onSearchInput, onSearchSubmit }) => {
-
   return (
   <React.Fragment>
-    <form onSubmit={onSearchSubmit}>
+    <form className="search-form" onSubmit={onSearchSubmit}>
       <InputWithLabel id="search" value={searchTerm} isFocused onInputChange={onSearchInput}><strong>Search</strong></InputWithLabel>
-      <button type="submit" disabled={!searchTerm} >Submit</button>
+      <button className="button button_large" type="submit" disabled={!searchTerm} >Submit</button>
     </form>
   </React.Fragment>
 )
@@ -117,8 +113,8 @@ const InputWithLabel = ({id, value, type = "text", onInputChange, children, isFo
   return (
     <React.Fragment>
       <div>
-        <label htmlFor={id}>{children}</label>
-        <input autoFocus={isFocused} value={value} id={id} type={type} onChange={onInputChange}/>
+        <label className="label" htmlFor={id}>{children}</label>
+        <input className="input" autoFocus={isFocused} value={value} id={id} type={type} onChange={onInputChange}/>
       </div>
     </React.Fragment>
   )
@@ -136,14 +132,16 @@ const List = ({list, onRemoveItem}) => {
 
 const Item = ({item, onRemoveItem}) => {
   return (
-    <li>
-      <span>
+    <li className="item">
+      <span style={{ width: '40%'}}>
         <a href={item.url}>{item.title}</a>
       </span>
-      <span>{item.author}</span>
-      <span>{item.num_comments}</span>
-      <span>{item.points}</span>
-      <span><button type="button" onClick={()=> onRemoveItem(item)}>Remove</button></span>
+      <span style={{ width: '30%'}}>{item.author}</span>
+      <span style={{ width: '30%'}}>{item.num_comments}</span>
+      <span style={{ width: '10%'}}>{item.points}</span>
+      <span style={{ width: '10%'}}>
+        <button className="button button_small" type="button" onClick={()=> onRemoveItem(item)}>Remove</button>
+      </span>
     </li>
   )
 };
