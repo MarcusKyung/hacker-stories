@@ -2,7 +2,7 @@ import React from 'react'
 import './App.css'
 import PropTypes from 'prop-types';
 import axios from 'axios';
-
+import { ReactComponent as Check } from './check.svg';
 
 
 const App = () => {
@@ -140,7 +140,9 @@ const Item = ({item, onRemoveItem}) => {
       <span style={{ width: '30%'}}>{item.num_comments}</span>
       <span style={{ width: '10%'}}>{item.points}</span>
       <span style={{ width: '10%'}}>
-        <button className="button button_small" type="button" onClick={()=> onRemoveItem(item)}>Remove</button>
+        <button className="button button_small" type="button" onClick={()=> onRemoveItem(item)}>
+        <Check height="18px" width="18px" />
+        </button>
       </span>
     </li>
   )
