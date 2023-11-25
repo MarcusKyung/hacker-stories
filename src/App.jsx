@@ -2,7 +2,7 @@ import React from 'react'
 import './App.css'
 import PropTypes from 'prop-types';
 import axios from 'axios';
-import { ReactComponent as Check } from './check.svg';
+import Check from './check.svg?react';
 
 
 const App = () => {
